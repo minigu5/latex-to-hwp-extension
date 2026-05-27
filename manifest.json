@@ -1,0 +1,82 @@
+{
+  "manifest_version": 3,
+  "name": "LaTeX → 한글(HWP) 수식 복사",
+  "version": "0.2.0",
+  "description": "AI 사이트의 수식에 마우스를 올리면 한글(HWP) 수식 편집기 문법으로 변환·복사합니다.",
+  "permissions": [
+    "clipboardWrite",
+    "clipboardRead",
+    "scripting",
+    "activeTab"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "LaTeX → 한글 수식 변환",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://aistudio.google.com/*",
+        "https://*.perplexity.ai/*",
+        "https://copilot.microsoft.com/*",
+        "https://www.bing.com/*",
+        "https://poe.com/*",
+        "https://chat.deepseek.com/*",
+        "https://chat.mistral.ai/*",
+        "https://grok.com/*",
+        "https://x.com/*",
+        "https://huggingface.co/*",
+        "https://www.phind.com/*",
+        "https://you.com/*",
+        "https://chatglm.cn/*",
+        "https://tongyi.aliyun.com/*",
+        "https://www.doubao.com/*",
+        "https://kimi.moonshot.cn/*"
+      ],
+      "js": [
+        "lib/converter.js",
+        "content/content.js"
+      ],
+      "css": [
+        "content/content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
+    "https://aistudio.google.com/*",
+    "https://*.perplexity.ai/*",
+    "https://copilot.microsoft.com/*",
+    "https://www.bing.com/*",
+    "https://poe.com/*",
+    "https://chat.deepseek.com/*",
+    "https://chat.mistral.ai/*",
+    "https://grok.com/*",
+    "https://x.com/*",
+    "https://huggingface.co/*",
+    "https://www.phind.com/*",
+    "https://you.com/*",
+    "https://chatglm.cn/*",
+    "https://tongyi.aliyun.com/*",
+    "https://www.doubao.com/*",
+    "https://kimi.moonshot.cn/*"
+  ]
+}

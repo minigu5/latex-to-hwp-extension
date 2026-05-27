@@ -1,0 +1,118 @@
+/* LaTeX → 한글(HWP) 수식 복사 — 플로팅 버튼
+ * 사이트 CSS 영향을 최소화하기 위해 핵심 시각 속성에 !important 를 사용한다. */
+.hwp-copy-btn {
+  position: fixed !important;
+  z-index: 2147483647 !important;
+  display: none;          /* 호버 시 JS가 inline-flex 로 전환 */
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 0 !important;
+  padding: 3px 9px !important;
+  border: none !important;
+  border-radius: 7px !important;
+  background: #2f6df6 !important;
+  color: #ffffff !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22) !important;
+  opacity: 0.96 !important;
+  transition: background 0.12s ease, opacity 0.12s ease !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  text-transform: none !important;
+}
+
+.hwp-copy-btn:hover {
+  background: #2257d4 !important;
+  opacity: 1 !important;
+}
+
+.hwp-copy-btn.copied {
+  background: #1e9e5a !important;
+}
+
+/* Gemini 등 annotation 없는 사이트: Cmd+C 유도 안내 칩 */
+.hwp-copy-btn.hint {
+  background: #5b6472 !important;
+}
+.hwp-copy-btn.hint:hover {
+  background: #474f5c !important;
+}
+
+/* 복사 가로채기 변환 알림 토스트 */
+.hwp-toast {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: 28px !important;
+  transform: translateX(-50%) translateY(8px) !important;
+  z-index: 2147483647 !important;
+  margin: 0 !important;
+  padding: 9px 16px !important;
+  border-radius: 9px !important;
+  background: #1e9e5a !important;
+  color: #fff !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.18s ease, transform 0.18s ease !important;
+}
+.hwp-toast.show {
+  opacity: 1 !important;
+  transform: translateX(-50%) translateY(0) !important;
+}
+
+/* 사용법 안내 배너 (Gemini 등) — 상단 중앙, X로 닫기 */
+.hwp-banner {
+  position: fixed !important;
+  top: 14px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  max-width: min(92vw, 620px) !important;
+  margin: 0 !important;
+  padding: 10px 10px 10px 16px !important;
+  border-radius: 11px !important;
+  background: #2f6df6 !important;
+  color: #fff !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.45 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28) !important;
+}
+.hwp-banner-msg {
+  flex: 1 1 auto !important;
+  color: #fff !important;
+}
+.hwp-banner-close {
+  flex: 0 0 auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 7px !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #fff !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+.hwp-banner-close:hover { background: rgba(255, 255, 255, 0.4) !important; }

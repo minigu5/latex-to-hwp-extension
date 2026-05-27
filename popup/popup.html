@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>LaTeX → 한글 수식</h1>
+
+    <div class="page-status" id="pageStatus">
+      <span class="page-status-text" id="pageStatusText">현재 페이지 확인 중…</span>
+      <button class="btn force-btn" id="forceOnBtn" type="button" hidden>이 페이지에서 켜기</button>
+    </div>
+
+    <label class="label" for="input">입력 (LaTeX)</label>
+    <textarea id="input" placeholder="예: $$\frac{2\pi}{24}(t - \phi_1)$$" autofocus></textarea>
+
+    <div class="label-row">
+      <span class="label">출력 (한글 수식)</span>
+      <button class="btn" id="copyBtn" type="button">복사</button>
+    </div>
+    <div class="output" id="output" aria-live="polite"></div>
+    <div class="hint" id="hint">입력하면 자동 변환됩니다. 결과를 복사해 한글 수식 편집기에 붙여넣으세요.</div>
+
+    <p class="tip">💡 AI 사이트의 수식 위에 마우스를 올리면 바로 복사 버튼이 뜹니다.
+      목록에 없는 페이지는 위의 "이 페이지에서 켜기"로 활성화하세요.</p>
+  </div>
+
+  <script src="../lib/converter.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
