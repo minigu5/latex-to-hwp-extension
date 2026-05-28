@@ -7,8 +7,7 @@
     "clipboardWrite",
     "clipboardRead",
     "scripting",
-    "activeTab",
-    "storage"
+    "activeTab"
   ],
   "optional_host_permissions": [
     "<all_urls>"
