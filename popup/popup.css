@@ -16,7 +16,24 @@ body {
   background: #fff;
 }
 .wrap { padding: 14px 14px 16px; }
-h1 { font-size: 1rem; margin: 0 0 12px; }
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+h1 { font-size: 1rem; margin: 0; }
+.site-link {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 4px 5px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+}
+.site-link:hover { background: var(--code-bg); color: var(--accent); }
 .label { font-weight: 600; font-size: 0.85rem; }
 .label-row {
   display: flex; justify-content: space-between; align-items: center;

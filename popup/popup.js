@@ -7,6 +7,19 @@
   var output = document.getElementById('output');
   var copyBtn = document.getElementById('copyBtn');
   var hint = document.getElementById('hint');
+  var siteLinkBtn = document.getElementById('siteLinkBtn');
+
+  if (siteLinkBtn) {
+    siteLinkBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var url = 'https://latex-to-hwp.vercel.app/';
+      if (typeof chrome !== 'undefined' && chrome.tabs) {
+        chrome.tabs.create({ url: url });
+      } else {
+        window.open(url, '_blank');
+      }
+    });
+  }
 
   var DEFAULT_HINT = hint.textContent;
   var hintTimer = null;
