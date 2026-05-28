@@ -1,4 +1,6 @@
-# LaTeX → 한글(HWP) 수식 복사 — 크롬 확장
+# 휩 - LaTeX → 한글(HWP) 수식 복사 — 크롬 확장
+
+[GitHub Repository (Separate)](https://github.com/minigu5/latex-to-hwp-extension)
 
 ChatGPT·Claude 답변의 수식 위에 마우스를 올리면 오른쪽 아래에 **"HWP 복사"** 버튼이 떠서,
 클릭 한 번으로 한글(HWP) 수식 편집기 문법으로 변환해 클립보드에 복사한다.
