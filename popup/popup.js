@@ -107,6 +107,17 @@
     pageStatus.className = 'page-status' + (cls ? ' ' + cls : '');
   }
 
+  // 활성 탭에 content script가 이미 주입돼 있는지 검사.
+  // content.js 가드 플래그(__hwpFormulaCopyInjected)를 읽어 본다.
+  function probeInjected(tabId) {
+    return chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      func: function () { return !!window.__hwpFormulaCopyInjected; }
+    }).then(function (results) {
+      return !!(results && results[0] && results[0].result);
+    });
+  }
+
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     var tab = tabs && tabs[0];
     var url = (tab && tab.url) || '';
@@ -123,34 +134,85 @@
     if (autoSupported) {
       setStatus('✓ 이 페이지는 자동으로 지원됩니다.', 'supported');
       forceOnBtn.hidden = true;
-    } else if (injectable) {
-      setStatus('자동 지원 목록에 없는 페이지입니다.', '');
-      forceOnBtn.hidden = false;
-    } else {
+      return;
+    }
+    if (!injectable) {
       setStatus('이 페이지에서는 사용할 수 없습니다 (브라우저 내부 페이지).', 'disabled');
       forceOnBtn.hidden = true;
+      return;
     }
+
+    // injectable 페이지: 이미 강제 On 된 적이 있는지 활성 탭에서 직접 검사.
+    // popup은 매번 새로 렌더되므로 페이지의 실제 상태를 봐야 정확하다.
+    setStatus('현재 페이지 확인 중…', '');
+    forceOnBtn.hidden = true;
+    probeInjected(tab.id).then(function (injected) {
+      if (injected) {
+        setStatus('✓ 이 페이지에서 활성화됨. 수식 위에 마우스를 올려보세요.', 'supported');
+        forceOnBtn.hidden = true;
+      } else {
+        setStatus('자동 지원 목록에 없는 페이지입니다.', '');
+        forceOnBtn.hidden = false;
+      }
+    }, function () {
+      // 검사 자체가 막힌 페이지(권한/보호) — 일단 켜기 버튼을 노출해 시도 허용.
+      setStatus('자동 지원 목록에 없는 페이지입니다.', '');
+      forceOnBtn.hidden = false;
+    });
 
     forceOnBtn.addEventListener('click', function () {
       if (!tab || !tab.id) return;
+
+      // 현재 origin 패턴 산출 — Chrome 권한 다이얼로그에 넘길 match pattern.
+      var u;
+      try { u = new URL(url); } catch (e) {
+        setStatus('활성화 실패: URL을 해석할 수 없습니다.', 'disabled');
+        return;
+      }
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+        setStatus('활성화 실패: 지원하지 않는 프로토콜입니다.', 'disabled');
+        return;
+      }
+      var originPattern = u.protocol + '//' + u.hostname + '/*';
+
       forceOnBtn.disabled = true;
-      forceOnBtn.textContent = '켜는 중…';
-      // CSS 먼저, 그다음 converter → content 순서로 주입
-      // (content.js 는 중복 주입 가드 __hwpFormulaCopyInjected 로 안전)
-      chrome.scripting.insertCSS({ target: { tabId: tab.id }, files: INJECT_CSS })
-        .catch(function () { /* 일부 페이지는 CSS만 막힐 수 있음 — 무시하고 진행 */ })
-        .then(function () {
-          return chrome.scripting.executeScript({ target: { tabId: tab.id }, files: INJECT_FILES });
-        })
-        .then(function () {
-          setStatus('✓ 이 페이지에서 활성화됨! 수식 위에 마우스를 올려보세요.', 'supported');
-          forceOnBtn.hidden = true;
-        })
-        .catch(function (err) {
-          setStatus('활성화 실패: ' + ((err && err.message) ? err.message : err), 'disabled');
+      forceOnBtn.textContent = '권한 요청 중…';
+
+      // 권한 요청만 한다. 다이얼로그 동안 popup이 포커스를 잃어 닫혀도, background의
+      // chrome.permissions.onAdded 가 동적 등록 + 매칭 탭에 즉시 주입까지 처리하므로
+      // 사용자는 "허용" 한 번으로 활성화가 끝난다.
+      chrome.permissions.request({ origins: [originPattern] }, function (granted) {
+        if (chrome.runtime.lastError || !granted) {
+          var reason = (chrome.runtime.lastError && chrome.runtime.lastError.message)
+            || '권한이 거부되어 활성화할 수 없습니다.';
+          setStatus(reason, 'disabled');
           forceOnBtn.disabled = false;
           forceOnBtn.textContent = '다시 시도';
-        });
+          return;
+        }
+
+        // popup이 아직 살아 있는 경우의 UI 마무리. background가 주입을 끝낼 시간을
+        // 잠깐 주고 probe로 결과를 확인한다. (popup이 닫혔어도 background는 끝낸다.)
+        setStatus('활성화 중…', '');
+        forceOnBtn.textContent = '활성화 중…';
+        var tries = 0;
+        (function poll() {
+          probeInjected(tab.id).then(function (ok) {
+            if (ok) {
+              setStatus('✓ 이 페이지에서 활성화됨. 새로고침해도 유지됩니다.', 'supported');
+              forceOnBtn.hidden = true;
+              return;
+            }
+            if (++tries < 8) { setTimeout(poll, 150); return; }
+            // background는 곧 끝내지만 popup이 먼저 응답 — 새로고침으로 안내.
+            setStatus('✓ 권한 부여 완료. 새로고침하면 활성화됩니다.', 'supported');
+            forceOnBtn.hidden = true;
+          }, function () {
+            setStatus('✓ 권한 부여 완료. 새로고침하면 활성화됩니다.', 'supported');
+            forceOnBtn.hidden = true;
+          });
+        })();
+      });
     });
   });
 })();

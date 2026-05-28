@@ -1,14 +1,21 @@
 {
   "manifest_version": 3,
   "name": "휩 - LaTeX → 한글(HWP) 수식 복사",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AI 사이트의 수식에 마우스를 올리면 한글(HWP) 수식 편집기 문법으로 변환·복사합니다.",
   "permissions": [
     "clipboardWrite",
     "clipboardRead",
     "scripting",
-    "activeTab"
+    "activeTab",
+    "storage"
   ],
+  "optional_host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup/popup.html",
     "default_title": "휩 - LaTeX → 한글 수식 변환",

@@ -25,6 +25,13 @@
   // 수식 옆 호버 'HWP 복사' 버튼으로만 변환한다.
   var HINT_SITE = /(^|\.)gemini\.google\.com$/.test(location.hostname);
 
+  // 강제 적용 사이트면 셀렉터와 추출 경로를 확장한다(content-forced.js 가 먼저 세팅).
+  // 정적 매칭 사이트(자동 지원)는 이 플래그가 없어 기존 동작 그대로 — KaTeX annotation만.
+  var FORCED_MODE = !!window.__hwpForceFullCompat;
+  var HOVER_SELECTOR = FORCED_MODE
+    ? '.katex, mjx-container, math'
+    : '.katex';
+
   var currentKatex = null;
   var hideTimer = null;
   var mode = 'convert';   // 'convert' = .katex annotation 변환 / 'hint' = Cmd+C 안내(Gemini)
@@ -42,8 +49,18 @@
     return /[\\${}^_]/.test(s) ||
       /[α-ωΑ-Ω∂∇∫∑∏√≤≥≠≈×÷±→←↔⋅·°∈∉⊂⊃∪∩∞]/.test(s);
   }
-  function hasAnnotation(katex) {
-    return !!(katex && katex.querySelector('annotation[encoding="application/x-tex"]'));
+  function hasAnnotation(el) {
+    return !!(el && el.querySelector('annotation[encoding="application/x-tex"]'));
+  }
+  // 강제 모드에서 추출 가능한 컨테이너 판정. 자동 모드는 annotation만 본다.
+  function hasExtractable(el) {
+    if (!el) return false;
+    if (hasAnnotation(el)) return true;
+    if (!FORCED_MODE) return false;
+    if (el.querySelector('script[type="math/tex"], script[type^="math/tex"]')) return true;
+    if (el.tagName && el.tagName.toLowerCase() === 'math') return true;
+    if (el.querySelector('math')) return true;
+    return !!((el.textContent || '').trim());
   }
 
   // ── 클립보드 복사 (app.js copyText 패턴) ───────────────────────
@@ -108,12 +125,20 @@
   function scheduleHide() { clearTimeout(hideTimer); hideTimer = setTimeout(hide, 220); }
   function cancelHide() { clearTimeout(hideTimer); }
 
-  function extractLatex(katex) {
-    var ann = katex.querySelector('annotation[encoding="application/x-tex"]');
+  function extractLatex(el) {
+    // 1) KaTeX/MathJax 공통 — annotation 에 raw LaTeX
+    var ann = el.querySelector('annotation[encoding="application/x-tex"]');
     if (ann && ann.textContent) return ann.textContent.trim();
-    var mml = katex.querySelector('math');
+    // 2) 강제 모드 — MathJax v2 의 <script type="math/tex"> 에 raw LaTeX
+    if (FORCED_MODE) {
+      var sc = el.querySelector('script[type="math/tex"], script[type^="math/tex"]');
+      if (sc && sc.textContent) return sc.textContent.trim();
+    }
+    // 3) MathML <math> textContent
+    var mml = (el.tagName && el.tagName.toLowerCase() === 'math') ? el : el.querySelector('math');
     if (mml && mml.textContent) return mml.textContent.trim();
-    return (katex.textContent || '').trim();
+    // 4) 마지막 폴백 — 보이는 텍스트
+    return (el.textContent || '').trim();
   }
 
   var labelTimer = null;
@@ -136,13 +161,13 @@
     if (t === btn) { cancelHide(); return; }
     // 선택 안내가 떠 있는 동안엔 호버가 덮어쓰지 않는다
     if (mode === 'hint' && hasSelection()) return;
-    var katex = t.closest('.katex');
-    if (katex && hasAnnotation(katex)) { cancelHide(); showConvert(katex); }
+    var el = t.closest(HOVER_SELECTOR);
+    if (el && hasExtractable(el)) { cancelHide(); showConvert(el); }
   });
   document.addEventListener('mouseout', function (e) {
     var t = e.target;
     if (!t || mode !== 'convert') return;
-    if (t === btn || (t.closest && t.closest('.katex'))) scheduleHide();
+    if (t === btn || (t.closest && t.closest(HOVER_SELECTOR))) scheduleHide();
   });
 
   // ── (2) 선택 안내 칩 (Gemini 전용) ─────────────────────────────
